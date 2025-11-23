@@ -43,6 +43,12 @@ Formatter ordering: `mod` (if present), all `use` (sorted), then `type`/`fn`/`te
   * Importing two items with the same final name (e.g., `foo::A` and `bar::A`) is a compile error in v0 (no renames).
 * Any `use` that cannot be resolved is a compile-time error.
 
+Static checks (semantic, not grammar):
+
+* Only one `mod` per file.
+* `use` targets must resolve; otherwise compile error.
+* Importing two items with the same final name is an error (no renames in v0); duplicate identical imports are allowed but redundant.
+
 ---
 
 ## 2. Lexical rules
@@ -133,6 +139,14 @@ Generics: `TypeId<T, U, ...>`.
 * Pattern bindings move non-Copy payloads into the new variable; `_` on a Move value moves-and-drops.
 * Moving a record or variant moves the whole value; there is no partial move.
 
+Ownership rules are enforced by static analysis (type/ownership checker), not syntax. Key errors:
+
+* use-after-move (including post-match scrutinee use)
+* field access on Move-typed fields
+* implicit partial moves are rejected; reconstruct instead of reusing moved parts
+* `_` on a Move value drops it; later use is illegal
+* variable shadowing follows spec rules (locals shadow imports, no duplicate locals in the same scope); violations are static errors
+
 ### 3.6 Strings
 
 * Strings are immutable UTF-8 slices (`str`).
@@ -222,6 +236,13 @@ Scrutinee evaluated once; arms must be exhaustive; first matching arm wins.
 * `_` drops the matched value (moves-and-drops for Move types, copies-and-drops for Copy types).
 * After the match, the scrutinee binding is invalid for Move types.
 
+Static checks (semantic, not grammar):
+
+* Guard conditions must be `bool`.
+* Matches must be exhaustive over the scrutinee type.
+* Pattern variable names may not repeat within a single pattern.
+* Functions/tests must have total return coverage (every path ends in `^expr` or `panic!`).
+
 ---
 
 ## 6. Expressions
@@ -284,7 +305,8 @@ Parsing is whitespace-insensitive except for `NEWLINE`:
 This means:
 
 * Well-formed tau-core source must be formatter-compliant.
-* The grammar permits slightly looser whitespace, but the formatter defines the canonical representation.
+* The parser is permissive (looser whitespace and unsorted `use` are accepted); the formatter defines the canonical representation.
+* Tooling SHOULD provide a `--check-format` mode that fails when input is not in canonical form (including unsorted imports), keeping the grammar robust while CI enforces determinism.
 
 ---
 
