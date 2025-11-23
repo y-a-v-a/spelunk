@@ -113,7 +113,6 @@ stmt
   | returnStmt
   | guardStmt
   | matchStmt
-  | panicStmt
   | exprStmt
   ;
 
@@ -122,15 +121,11 @@ declStmt
   ;
 
 assignStmt
-  : ID (BANG)? ASSIGN expr
+  : ID BANG ASSIGN expr
   ;
 
 returnStmt
   : CARET expr
-  ;
-
-panicStmt
-  : PANIC BANG
   ;
 
 // cond ? action
@@ -141,13 +136,12 @@ guardStmt
 guardAction
   : returnStmt
   | assignStmt
-  | panicStmt
   | expr
   ;
 
 // r | Ok(_) -> action
 matchStmt
-  : expr PIPE pattern ARROW guardAction (NEWLINE PIPE pattern ARROW guardAction)+
+  : expr PIPE pattern ARROW guardAction (NEWLINE PIPE pattern ARROW guardAction)*
   ;
 
 exprStmt
@@ -205,9 +199,18 @@ unaryExpr
 
 primary
   : literal
-  | ID suffix*
+  | panicExpr
+  | identifierRef suffix*
   | TYPE_ID ctorSuffix
   | LPAREN expr RPAREN
+  ;
+
+identifierRef
+  : ID (BANG)?
+  ;
+
+panicExpr
+  : PANIC BANG
   ;
 
 suffix
@@ -310,9 +313,9 @@ ID      : [a-z_] [a-zA-Z0-9_]*;
 INT     : [0-9]+;
 FLOAT   : [0-9]+ '.' [0-9]+;
 
-STRING  : '"' ( ~["\\] | '\\' . )* '"';
+STRING  : '"' ( ~["\\\n\r] | '\\' ["\\nt] )* '"';
 
-// Whitespace & comments
+// Whitespace
 
 NEWLINE
   : '\r'? '\n'+
@@ -323,9 +326,9 @@ WS
   ;
 
 LINE_COMMENT
-  : '//' ~[\r\n]* -> skip
+  : '#' ~[\n\r]* -> skip
   ;
 
 BLOCK_COMMENT
-  : '/*' .*? '*/' -> skip
+  : '###' .*? '###' -> skip
   ;

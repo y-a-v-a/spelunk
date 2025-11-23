@@ -2,6 +2,8 @@
 
 Built for tools and LLMs first: minimal surface, deterministic structure, explicit control flow, and canonical formatting.
 
+> Keep in mind that this programming language should be simple, predictable, and very friendly as a reasoning/IR layer, compact, deterministic, strongly typed, not necessarily human readable (spelunking good enough for humans), LLM-friendly, token efficient, canonical formatted language.
+
 ---
 
 ## 0. Design snapshot
@@ -61,6 +63,11 @@ Formatter ordering: `mod` (if present), all `use` (sorted), then `type`/`fn`/`te
 * Floats: `0.0`, `3.14` (no exponents)
 * Strings: `"hello"` (double-quoted, escaped)
 * Booleans: `true`, `false`
+
+### 2.4 Comments
+
+* Line comments start with `#` and run to end of line.
+* Block comments are delimited by `###` ... `###` and do not nest in v0.
 
 ---
 
