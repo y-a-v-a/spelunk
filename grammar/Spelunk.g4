@@ -328,7 +328,3 @@ WS
 LINE_COMMENT
   : '#' ~[\n\r]* -> skip
   ;
-
-BLOCK_COMMENT
-  : '###' .*? '###' -> skip
-  ;

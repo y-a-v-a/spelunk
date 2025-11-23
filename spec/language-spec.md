@@ -73,7 +73,7 @@ Static checks (semantic, not grammar):
 ### 2.4 Comments
 
 * Line comments start with `#` and run to end of line.
-* Block comments are delimited by `###` ... `###` and do not nest in v0.
+* Block comments are not supported in v0.
 
 ---
 
